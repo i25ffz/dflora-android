@@ -65,7 +65,7 @@ void createEngine()
 
   // get the engine interface
   result = (*engineObject)->GetInterface(engineObject, SL_IID_ENGINE, &engineEngine);
-  assert(SL_RESULT_SUCCESS === result);
+  assert(SL_RESULT_SUCCESS == result);
 
   // create output mix
   const SLInterfaceID ids[1] = {SL_IID_ENVIRONMENTALREVERB};

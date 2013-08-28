@@ -24,15 +24,16 @@
 
 #include <android/sensor.h>
 #include <android/log.h>
+ #include <android/window.h>
 #include <android_native_app_glue.h>
 
-#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "native-activity", __VA_ARGS__))
-#define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "native-activity", __VA_ARGS__))
+#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "dflora", __VA_ARGS__))
+#define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "dflora", __VA_ARGS__))
 
 #include "demo.h"
 #include "timer.h"
 
-static Demo	g_Demo;
+static Demo g_Demo;
 
 /**
  * Our saved state data.
@@ -121,12 +122,12 @@ static int engine_init_display(struct engine* engine) {
     engine->height = h;
     engine->state.angle = 0;
 
-	Real width = Product(ITOR(150), FTOR(1.0/32.0));
-	Real height = Product(ITOR(150), FTOR(1.0/32.0));
-	
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glFrustumr(-width, width, -height, height, ITOR(5), ITOR(500));
+    Real width = Product(ITOR(150), FTOR(1.0/32.0));
+    Real height = Product(ITOR(150), FTOR(1.0/32.0));
+    
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glFrustumr(-width, width, -height, height, ITOR(5), ITOR(500));
 /*
     // Initialize GL state.
     glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
@@ -147,21 +148,21 @@ static void engine_draw_frame(struct engine* engine) {
     }
 
     // Just fill the screen with a color.
-	/*
+    /*
     glClearColor(((float)engine->state.x)/engine->width, engine->state.angle,
             ((float)engine->state.y)/engine->height, 1);
     glClear(GL_COLOR_BUFFER_BIT);
-	*/
-	
-	static TimeValue timelast = 0;
-	TimeValue timecur = g_Timer.GetElapsedTime();
-	TimeValue deltatime = (timecur-timelast)%100;
-	timelast = timecur;
+    */
+    
+    static TimeValue timelast = 0;
+    TimeValue timecur = g_Timer.GetElapsedTime();
+    TimeValue deltatime = (timecur-timelast)%100;
+    timelast = timecur;
 
-	g_Demo.Tick(deltatime);
-	
-	g_Demo.Render();
-	
+    g_Demo.Tick(deltatime);
+    
+    g_Demo.Render();
+    
     eglSwapBuffers(engine->display, engine->surface);
 }
 
@@ -212,10 +213,15 @@ static void engine_handle_cmd(struct android_app* app, int32_t cmd) {
             engine->app->savedStateSize = sizeof(struct saved_state);
             break;
         case APP_CMD_INIT_WINDOW:
+            if (engine->app->activity != NULL) {
+                LOGI("set activity screen keep on...");
+                ANativeActivity_setWindowFlags(engine->app->activity, AWINDOW_FLAG_KEEP_SCREEN_ON, 0);
+            }
+        
             // The window is being shown, get it ready.
             if (engine->app->window != NULL) {
                 engine_init_display(engine);
-				g_Demo.Create();
+                g_Demo.Create();
                 engine_draw_frame(engine);
             }
             break;
@@ -301,11 +307,11 @@ void android_main(struct android_app* state) {
                     ASensorEvent event;
                     while (ASensorEventQueue_getEvents(engine.sensorEventQueue,
                             &event, 1) > 0) {
-							/*
+                            /*
                         LOGI("accelerometer: x=%f y=%f z=%f",
                                 event.acceleration.x, event.acceleration.y,
                                 event.acceleration.z);
-								*/
+                                */
                     }
                 }
             }
