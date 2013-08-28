@@ -24,7 +24,7 @@
 
 #include <android/sensor.h>
 #include <android/log.h>
- #include <android/window.h>
+#include <android/window.h>
 #include <android_native_app_glue.h>
 
 #define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "dflora", __VA_ARGS__))
