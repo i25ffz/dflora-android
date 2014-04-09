@@ -57,7 +57,7 @@ void Sky::Create()
 
 void Sky::CreateSkyBox()
 {
-	m_TextureFence.SetImageFile("/sdcard/dflora/skyfence.tga");
+	m_TextureFence.SetImageFile("skyfence.tga");
 
 	m_nNumVertices = 10;
 	m_pVertices = new RealVec3[m_nNumVertices];
@@ -137,8 +137,8 @@ void Sky::CreateSkyBox()
 
 void Sky::CreateSkyDoom(uint8 longitude, uint8 latitude)	// half sphere
 {
-	m_TextureFence.SetImageFile("/sdcard/dflora/skyfence.tga");
-	m_TextureDoom.SetImageFile("/sdcard/dflora/skydoom.tga");
+	m_TextureFence.SetImageFile("skyfence.tga");
+	m_TextureDoom.SetImageFile("skydoom.tga");
 
 
 	m_nLatitude = latitude>2 ? latitude : 2;
@@ -149,7 +149,7 @@ void Sky::CreateSkyDoom(uint8 longitude, uint8 latitude)	// half sphere
 	unsigned int vindex=0;
 	uint8 i, j;
 
-	m_TextureDoom.LoadTexture();
+	//m_TextureDoom.LoadTexture();
 	m_TextureFence.LoadTexture();
 
 	// vertices

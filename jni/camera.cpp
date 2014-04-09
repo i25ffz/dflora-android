@@ -54,13 +54,13 @@ void Camera::Create()
 	m_Position[0] = m_Position[1] = m_Position[2] = R_ZERO;
 	m_Pitch = m_Yaw = R_ZERO;
 
-	m_TextureStreak.SetImageFile("/sdcard/dflora/Streaks.bmp");
+	m_TextureStreak.SetImageFile("Streaks.bmp");
 	m_TextureStreak.LoadTexture();
-	m_TextureHalo.SetImageFile("/sdcard/dflora/Halo.bmp");
+	m_TextureHalo.SetImageFile("Halo.bmp");
 	m_TextureHalo.LoadTexture();
-	m_TextureGlow.SetImageFile("/sdcard/dflora/HardGlow.bmp");
+	m_TextureGlow.SetImageFile("HardGlow.bmp");
 	m_TextureGlow.LoadTexture();
-	m_TextureBigGlow.SetImageFile("/sdcard/dflora/BigGlow.bmp");
+	m_TextureBigGlow.SetImageFile("BigGlow.bmp");
 	m_TextureBigGlow.LoadTexture();
 
 	m_Vertices[0][0] = FTOR(-0.5);

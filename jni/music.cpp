@@ -5,30 +5,33 @@ This source file is part of Dflora (Dancing Flora) OpenGL|ES 1.1 version
 Copyright (c) 2004-2005 Changzhi Li < richardzlee@163.com >
 
 This program is free software; you can redistribute it and/or modify it under
-the terms of the GNU Lesser General Public License as published by the Free 
-Software Foundation; either version 2 of the License, or (at your option) any 
+the terms of the GNU Lesser General Public License as published by the Free
+Software Foundation; either version 2 of the License, or (at your option) any
 later version.
 
 This program is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more 
+FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
 details.
 
-You should have received a copy of the GNU Lesser General Public License along 
-with this program; if not, write to the Free Software Foundation, Inc., 59 
+You should have received a copy of the GNU Lesser General Public License along
+with this program; if not, write to the Free Software Foundation, Inc., 59
 Temple Place - Suite 330, Boston, MA 02111-1307, USA, or go to
 http://www.gnu.org/copyleft/lesser.txt.
 -----------------------------------------------------------------------------
 */
 
-//#include <windows.h>
-//#include <mmsystem.h>
+#ifdef ANDROID
 
 #include <stdio.h>
 #include <SLES/OpenSLES.h>
+#include <SLES/OpenSLES_Android.h>
 #include <assert.h>
+#include <android/asset_manager.h>
 
 #include "music.h"
+
+extern AAssetManager* g_assetMgr;
 
 //#pragma comment(lib, "winmm.lib")
 
@@ -77,7 +80,7 @@ void createEngine()
   result = (*outputMixObject)->Realize(outputMixObject, SL_BOOLEAN_FALSE);
   assert(SL_RESULT_SUCCESS == result);
 
-#if 0  
+#if 0
   // get the environmental reverb interface
   result = (*outputMixObject)->GetInterface(outputMixObject, SL_IID_ENVIRONMENTALREVERB,
 		&outputMixEnvironmentalReverb);
@@ -92,8 +95,20 @@ bool createUriAudioPlayer(const char* uri)
 {
   SLresult result;
 
-  // config audio source
-  SLDataLocator_URI loc_uri = {SL_DATALOCATOR_URI, (SLchar *) uri};
+  // use asset manager to open asset by filename
+  AAsset* asset = AAssetManager_open(g_assetMgr, uri, AASSET_MODE_STREAMING);
+
+  // open asset as file descriptor
+  off_t start, length;
+  int fd = AAsset_openFileDescriptor(asset, &start, &length);
+  assert(0 <= fd);
+  AAsset_close(asset);
+
+  // configure audio source
+  SLDataLocator_AndroidFD loc_uri = {SL_DATALOCATOR_ANDROIDFD, fd, start, length};
+
+  // config audio source  ==  old way
+  //SLDataLocator_URI loc_uri = {SL_DATALOCATOR_URI, (SLchar *) uri};
   SLDataFormat_MIME format_mime = {SL_DATAFORMAT_MIME, NULL, SL_CONTAINERTYPE_UNSPECIFIED};
   SLDataSource audioSrc = {&loc_uri, &format_mime};
 
@@ -124,7 +139,7 @@ bool createUriAudioPlayer(const char* uri)
   assert(SL_RESULT_SUCCESS == result);
 
   // enable whole file looping
-  result = (*uriPlayerSeek)->SetLoop(uriPlayerSeek, SL_BOOLEAN_TRUE, 0, SL_TIME_UNKNOWN);
+  result = (*uriPlayerSeek)->SetLoop(uriPlayerSeek, SL_BOOLEAN_FALSE, 0, SL_TIME_UNKNOWN);
   assert(SL_RESULT_SUCCESS == result);
 
   return true;
@@ -144,7 +159,7 @@ int PlayMusic(const char *pathname)
 {
 	//PlaySound(pathname, NULL, SND_FILENAME|SND_ASYNC);
 
-	// if not init, then create the OpenSL engine	
+	// if not init, then create the OpenSL engine
 	if (!isInited)
 	{
 		createEngine();
@@ -166,3 +181,27 @@ int StopMusic()
 
 	return 0;
 }
+
+#else
+
+#include <windows.h>
+#include <mmsystem.h>
+
+#include "music.h"
+
+
+#pragma comment(lib, "winmm.lib")
+
+int PlayMusic(const char *pathname)
+{
+	PlaySound(pathname, NULL, SND_FILENAME|SND_ASYNC);
+	return 0;
+}
+
+int StopMusic()
+{
+	PlaySound(NULL, NULL, NULL);
+	return 0;
+}
+
+#endif

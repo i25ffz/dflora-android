@@ -23,6 +23,7 @@ http://www.gnu.org/copyleft/lesser.txt.
 
 #include <stdio.h>
 #include "flower.h"
+#include "file.h"
 
 Script::Script()
 {
@@ -33,49 +34,48 @@ Script::Script()
 bool Script::Load(const char * filename)
 {
 	uint16 i;
-	FILE * file = fopen(filename, "rb");
-	if(file == NULL)		return FALSE;
+	File file(filename);
 
-	if(fread(&m_nNumBeatUnit, sizeof(uint16), 1, file) != 1)
+	if(file.read(&m_nNumBeatUnit, sizeof(uint16), 1) != 1)
 		return FALSE;
-	
+
 	m_pBeatUnits = new BeatUnit[m_nNumBeatUnit];
 
 	for (i=0; i<m_nNumBeatUnit; i++)
 	{
 		BeatUnit & bu = m_pBeatUnits[i];
-		if(fread(bu.m_PoseIndex, sizeof(int16), 6, file) != 6)
+		if(file.read(bu.m_PoseIndex, sizeof(int16), 6) != 6)
 			return FALSE;
 
-		if(fread(bu.m_PoseExtent, sizeof(Real), 6, file) != 6)
+		if(file.read(bu.m_PoseExtent, sizeof(Real), 6) != 6)
 			return FALSE;
 
-		if(fread(bu.m_Velocity, sizeof(RealVec3), 1, file) != 1)
+		if(file.read(bu.m_Velocity, sizeof(RealVec3), 1) != 1)
 			return FALSE;
 
-		if(fread(&(bu.m_Acceleration), sizeof(Real), 1, file) != 1)
+		if(file.read(&(bu.m_Acceleration), sizeof(Real), 1) != 1)
 			return FALSE;
 
-		if(fread(&(bu.m_WhirlVel), sizeof(Real), 1, file) != 1)
+		if(file.read(&(bu.m_WhirlVel), sizeof(Real), 1) != 1)
 			return FALSE;
 
-		if(fread(&(bu.m_WhirlAcc), sizeof(Real), 1, file) != 1)
+		if(file.read(&(bu.m_WhirlAcc), sizeof(Real), 1) != 1)
 			return FALSE;
 
-		if(fread(bu.m_FlipAxis, sizeof(RealVec3), 1, file) != 1)
+		if(file.read(bu.m_FlipAxis, sizeof(RealVec3), 1) != 1)
 			return FALSE;
 
-		if(fread(&(bu.m_FlipVel), sizeof(Real), 1, file) != 1)
+		if(file.read(&(bu.m_FlipVel), sizeof(Real), 1) != 1)
 			return FALSE;
 
-		if(fread(&(bu.m_FlipRound), sizeof(uint8), 1, file) != 1)
+		if(file.read(&(bu.m_FlipRound), sizeof(uint8), 1) != 1)
 			return FALSE;
 
-		if(fread(&(bu.m_Action), sizeof(uint8), 1, file) != 1)
+		if(file.read(&(bu.m_Action), sizeof(uint8), 1) != 1)
 			return FALSE;
-	}	
+	}
 
-	fclose(file);
+	file.close();
 	return TRUE;
 }
 
@@ -114,11 +114,10 @@ Flower::~Flower()
 bool Flower::Load(const char * filename)
 {
 	uint16 i;
-	FILE * file = fopen(filename, "rb");
-	if(file == NULL)	return FALSE;
-	
+	File file(filename);
+
 	// Vertices
-	if(fread(&m_nNumVertices, sizeof(uint16), 1, file) != 1)
+	if(file.read(&m_nNumVertices, sizeof(uint16), 1) != 1)
 		return FALSE;
 
 	m_pVertices = new RealVec3[m_nNumVertices];
@@ -127,10 +126,10 @@ bool Flower::Load(const char * filename)
 	m_pBoneID = new uint8[m_nNumVertices];
 	m_pBoneWeight = new Real[m_nNumVertices];
 
-	if(fread(m_pVertices, sizeof(RealVec3), m_nNumVertices, file) != m_nNumVertices)
+	if(file.read(m_pVertices, sizeof(RealVec3), m_nNumVertices) != m_nNumVertices)
 		return FALSE;
 
-	if(fread(m_pBoneID, sizeof(uint8), m_nNumVertices, file) != m_nNumVertices)
+	if(file.read(m_pBoneID, sizeof(uint8), m_nNumVertices) != m_nNumVertices)
 		return FALSE;
 
 	// initialize vertices weight
@@ -144,60 +143,60 @@ bool Flower::Load(const char * filename)
 	m_pNormals = new RealVec3[m_nNumVertices];
 	m_pNormalsTM = new RealVec3[m_nNumVertices];
 
-	if(fread(m_pNormals, sizeof(RealVec3), m_nNumVertices, file) != m_nNumVertices)
+	if(file.read(m_pNormals, sizeof(RealVec3), m_nNumVertices) != m_nNumVertices)
 		return FALSE;
 
 	// Indices
-	if(fread(&m_nNumIndices, sizeof(uint16), 1, file) != 1)
+	if(file.read(&m_nNumIndices, sizeof(uint16), 1) != 1)
 		return FALSE;
 
 	m_pIndices = new GLushort[m_nNumIndices];
 
-	if(fread(m_pIndices, sizeof(GLushort), m_nNumIndices, file) != m_nNumIndices)
+	if(file.read(m_pIndices, sizeof(GLushort), m_nNumIndices) != m_nNumIndices)
 		return FALSE;
 
 	// Materials
-	if(fread(&m_nNumMaterials, sizeof(uint16), 1, file) != 1)
+	if(file.read(&m_nNumMaterials, sizeof(uint16), 1) != 1)
 		return FALSE;
 
 	m_pMaterials = new Model::Material[m_nNumMaterials];
 
 	for(i=0; i<m_nNumMaterials; i++)
 	{
-		if(fread(m_pMaterials+i, sizeof(Model::Material), 1, file) != 1)
+		if(file.read(m_pMaterials+i, sizeof(Model::Material), 1) != 1)
 			return FALSE;
 	}
 
 	// Bones
-	if(fread(&m_nNumBones, sizeof(uint16), 1, file) != 1)
+	if(file.read(&m_nNumBones, sizeof(uint16), 1) != 1)
 		return FALSE;
 
 	m_pBones = new Bone[m_nNumBones];
-	
+
 	for(i=0; i<m_nNumBones; i++)
 	{
 		Bone& bone = m_pBones[i];
 		bone.Create();
 		int8 parent;
-		if(fread(&parent, sizeof(int8), 1, file) != 1)
+		if(file.read(&parent, sizeof(int8), 1) != 1)
 			return FALSE;
 		bone.SetParent(parent);
 
-		if(fread(bone.m_TranslateOrg, sizeof(RealVec3), 1, file) != 1)
+		if(file.read(bone.m_TranslateOrg, sizeof(RealVec3), 1) != 1)
 			return FALSE;
-		if(fread(bone.m_RotateOrg, sizeof(RealQuat4), 1, file) != 1)
+		if(file.read(bone.m_RotateOrg, sizeof(RealQuat4), 1) != 1)
 			return FALSE;
-		
+
 		Real temp;
-		if(fread(&temp, sizeof(Real), 1, file) != 1)
+		if(file.read(&temp, sizeof(Real), 1) != 1)
 			return FALSE;
 		bone.SetFlex(temp);
 
-		if(fread(&temp, sizeof(Real), 1, file) != 1)
+		if(file.read(&temp, sizeof(Real), 1) != 1)
 			return FALSE;
 		bone.SetInverseInertia(temp);
 
-		if(fread(&temp, sizeof(Real), 1, file) != 1)
+		if(file.read(&temp, sizeof(Real), 1) != 1)
 			return FALSE;
 		bone.SetDamp(temp);
 	}
@@ -211,10 +210,10 @@ bool Flower::Load(const char * filename)
 		int16 pr = m_pBones[i].GetParent();
 		*slider++ = pr<0 ? (GLushort)0 : (GLushort) pr;
 		*slider++ = (GLushort) i;
-	}	
+	}
 
 	// Postures
-	if(fread(&m_nNumPostures, sizeof(uint16), 1, file) != 1)
+	if(file.read(&m_nNumPostures, sizeof(uint16), 1) != 1)
 		return FALSE;
 
 	m_pPostures = new Posture[m_nNumPostures];
@@ -223,19 +222,19 @@ bool Flower::Load(const char * filename)
 	{
 		Posture& pos = m_pPostures[i];	// alias for short
 		uint8 num;
-		if(fread(&num, sizeof(uint8), 1, file) != 1)
-			return FALSE;		
+		if(file.read(&num, sizeof(uint8), 1) != 1)
+			return FALSE;
 		pos.Create(num);
 		for(uint8 j=0; j<num; j++)
 		{
-			if(fread(&(pos.m_pBoneID[j]), sizeof(uint8), 1, file) != 1)
-				return FALSE;			 
-			if(fread(&(pos.m_pTorques[j]), sizeof(RealVec3), 1, file) != 1)
+			if(file.read(&(pos.m_pBoneID[j]), sizeof(uint8), 1) != 1)
+				return FALSE;
+			if(file.read(&(pos.m_pTorques[j]), sizeof(RealVec3), 1) != 1)
 				return FALSE;
 		}
 	}
 
-	fclose(file);
+	file.close();
 	SetupModelSpaceToBoneSpaceTM();
 	return TRUE;
 }

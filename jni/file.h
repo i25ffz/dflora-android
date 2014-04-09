@@ -21,12 +21,32 @@ http://www.gnu.org/copyleft/lesser.txt.
 -----------------------------------------------------------------------------
 */
 
-#ifndef _MUSIC_H_
-#define _MUSIC_H_
+#ifndef _FILE_H_
+#define _FILE_H_
 
-/** This file offer this simple interface of music playing.
+#ifdef ANDROID
+#include <android/asset_manager.h>
+#else
+#include <stdio.h>
+#endif // ANDROID
+
+/** A File warpper class support android && other os.
 */
-int PlayMusic(const char* filename);
-int StopMusic();
+class File
+{
+private:
+#ifdef ANDROID
+    AAsset* m_asset;
+#else
+    FILE* m_file;
+#endif // ANDROID
+
+public:
+	File(const char * filename);
+	size_t read(void *buf, size_t size, size_t count);
+	int seek(long offset, int pos);
+	long tell();
+	int close();
+};
 
 #endif

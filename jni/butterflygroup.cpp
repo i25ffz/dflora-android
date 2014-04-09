@@ -47,8 +47,8 @@ void ButterflyGroup::Create(uint8 num)
 	{
 		m_pButterflies[i].Create();
 	}
-	m_Texture1.SetImageFile("/sdcard/dflora/butterfly1.tga");
-	m_Texture2.SetImageFile("/sdcard/dflora/butterfly2.tga");
+	m_Texture1.SetImageFile("butterfly1.tga");
+	m_Texture2.SetImageFile("butterfly2.tga");
 
 }
 

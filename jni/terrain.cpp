@@ -58,7 +58,7 @@ void Terrain::Create()
 	m_TexCoords[3][0] = R_ZERO;
 	m_TexCoords[3][1] = tr;
 
-	m_Texture.SetImageFile("/sdcard/dflora/SAND.BMP");
+	m_Texture.SetImageFile("SAND.BMP");
 }
 
 

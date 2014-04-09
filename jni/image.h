@@ -54,7 +54,7 @@ public:
 	bool	LoadTGA(const char* filename);
 	bool	LoadBMP(const char* filename);
 
-	bool	SaveTGA(const char* filename);
+	//bool	SaveTGA(const char* filename);
 
 	// returns the image's width, in pixels
 	int   GetWidth() const { return m_width; }

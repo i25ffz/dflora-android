@@ -25,7 +25,7 @@ http://www.gnu.org/copyleft/lesser.txt.
 //#include "windows.h"
 #include "image.h"
 #include "utility.h"
-
+#include "file.h"
 
 struct rgb_t
 {
@@ -263,44 +263,43 @@ bool Image::Load(const char * filename)
 
 bool Image::LoadBMP(const char * filename)	// not work properly for 16bit and 8bit/256 color
 {
-	FILE *fp = fopen(filename, "rb");
-    if (!fp) return false;
+	File file(filename);
 
-    fseek(fp, 0, SEEK_END);
-    size_t filelen = ftell(fp);			// determine file size so we can fill it in later if FileSize == 0
-    fseek(fp, 0, SEEK_SET);
+    file.seek(0, SEEK_END);
+    size_t filelen = file.tell();			// determine file size so we can fill it in later if FileSize == 0
+    file.seek(0, SEEK_SET);
 
     int ncolours=0;
     int ncomp=0;
-    
+
     bmpheader_t hd;
     bmpinfo_t	inf;
-    fread((char *)&hd, sizeof(bmpheader_t), 1, fp);
-    if (hd.fileType == MB) 
+    file.read((char *)&hd, sizeof(bmpheader_t), 1);
+    if (hd.fileType == MB)
 	{
         long infsize;									// size of BMPinfo in bytes
         unsigned char *imbuff;							// image buffer
-        fread((char *)&infsize, sizeof(long), 1, fp);	// insert inside 'the file is bmp' clause
+        file.read((char *)&infsize, sizeof(long), 1);	// insert inside 'the file is bmp' clause
         unsigned char * hdr=new unsigned char[infsize];	// to hold the new header
 
-        fread((char *)hdr, 1, infsize-sizeof(long), fp);
-        long hsiz = sizeof(inf);							// minimum of structure size & 
+        file.read((char *)hdr, 1, infsize-sizeof(long));
+        long hsiz = sizeof(inf);							// minimum of structure size &
         if(infsize <= hsiz) hsiz=infsize;
         memcpy(&inf, hdr, hsiz);							// copy only the bytes I can cope with
 		ncolours=inf.colorbits/8;
 
         SafeDeleteArray(hdr);
         long size = hd.size[1]*65536+hd.size[0];
-        
+
         // handle size==0 in uncompressed 24-bit BMPs
         if (size == 0) size = filelen;
 
         if (inf.imageSize == 0)
 			inf.imageSize=inf.width*inf.height*ncolours;
-		
+
         imbuff = new unsigned char [inf.imageSize];		// read from disk
-		fseek(fp, hd.offset[1]*65536+hd.offset[0], SEEK_SET);
-        fread((char *)imbuff, sizeof(unsigned char), inf.imageSize, fp);
+		file.seek(hd.offset[1]*65536+hd.offset[0], SEEK_SET);
+        file.read((char *)imbuff, sizeof(unsigned char), inf.imageSize);
 
         switch (ncolours) 
 		{
@@ -340,18 +339,17 @@ bool Image::LoadBMP(const char * filename)	// not work properly for 16bit and 8b
             off+=doff;
         }
         SafeDeleteArray(imbuff); // free the on-disk storage
- 
-        fclose(fp);
 
-    } 
+        file.close();
+    }
     else // else error in header
     {
-        fclose(fp);
-        return false;        
+        file.close();
+        return false;
     }
     m_width = inf.width;
     m_height = inf.height;
-    switch (ncomp) 
+    switch (ncomp)
 	{
     case BMP_GRAYSCALE:
         m_dataFormat = GL_LUMINANCE;
@@ -385,24 +383,21 @@ bool Image::LoadBMP(const char * filename)	// not work properly for 16bit and 8b
 
 bool Image::LoadTGA(const char* filename)
 {
-	FILE* pFile;
-
-	pFile = fopen(filename, "rb");
-	if (!pFile)	return false;
+	File file(filename);
 
 	// read in the image type
 	tgaheader_t tga;		// TGA header
 
-	fread(&tga, sizeof(tgaheader_t), 1, pFile);
+	file.read(&tga, sizeof(tgaheader_t), 1);
 
 	// see if the type is one that we support
-	if ((  (tga.imageType != TGA_RGB) 
-		&& (tga.imageType != TGA_GRAYSCALE) 
-		&& (tga.imageType != TGA_RGB_RLE) 
-		&& (tga.imageType != TGA_GRAYSCALE_RLE) ) 
+	if ((  (tga.imageType != TGA_RGB)
+		&& (tga.imageType != TGA_GRAYSCALE)
+		&& (tga.imageType != TGA_RGB_RLE)
+		&& (tga.imageType != TGA_GRAYSCALE_RLE) )
 		|| (tga.colorMapType != 0) )
 	{
-		if (pFile) fclose(pFile);
+		file.close();
 		return NULL;
 	}
 
@@ -416,7 +411,7 @@ bool Image::LoadTGA(const char* filename)
 	// won't handle < 24 bpp for now
 	if (colorMode < 3)
 	{
-		if(pFile) fclose(pFile);
+		file.close();
 		return NULL;
 	}
 
@@ -428,7 +423,7 @@ bool Image::LoadTGA(const char* filename)
 	// read image data
 	if (tga.imageType == TGA_RGB || tga.imageType == TGA_GRAYSCALE)
 	{
-		fread(m_pData, sizeof(GLubyte), m_imageSize, pFile);
+		file.read(m_pData, sizeof(GLubyte), m_imageSize);
 	}
 	else // must be RLE compressed
 	{
@@ -440,7 +435,7 @@ bool Image::LoadTGA(const char* filename)
 		while(i < m_imageSize)
 		{
 
-			fread(&id, sizeof(char), 1, pFile);
+			file.read(&id, sizeof(char), 1);
 
 			// see if this is run length data
 			if(id & 0x80)
@@ -450,13 +445,13 @@ bool Image::LoadTGA(const char* filename)
 
 				// next 3 (or 4) bytes are the repeated values
 
-				fread(&color.b, sizeof(char), 1, pFile);
-				fread(&color.g, sizeof(char), 1, pFile);
-				fread(&color.r, sizeof(char), 1, pFile);
+				file.read(&color.b, sizeof(char), 1);
+				file.read(&color.g, sizeof(char), 1);
+				file.read(&color.r, sizeof(char), 1);
 
 				if(colorMode == 4)
 				{
-					fread(&color.a, sizeof(char), 1, pFile);
+					file.read(&color.a, sizeof(char), 1);
 				}
 
 				// save everything in this run
@@ -481,13 +476,13 @@ bool Image::LoadTGA(const char* filename)
 				while (length > 0)
 				{
 
-					fread(&color.b, sizeof(char), 1, pFile);
-					fread(&color.g, sizeof(char), 1, pFile);
-					fread(&color.r, sizeof(char), 1, pFile);
+					file.read(&color.b, sizeof(char), 1);
+					file.read(&color.g, sizeof(char), 1);
+					file.read(&color.r, sizeof(char), 1);
 
 					if(colorMode == 4)
 					{
-						fread(&color.a, sizeof(char), 1, pFile);
+						file.read(&color.a, sizeof(char), 1);
 					}
 					m_pData[i++] = color.b;
 					m_pData[i++] = color.g;
@@ -503,7 +498,7 @@ bool Image::LoadTGA(const char* filename)
 		}
 	}
 
-	if (pFile) fclose(pFile);
+	file.close();
 
 	switch(tga.imageType)
 	{
@@ -534,6 +529,7 @@ bool Image::LoadTGA(const char* filename)
 	return (m_pData != NULL);
 }
 
+/*
 bool Image::SaveTGA(const char* filename)
 {
 	FILE* pFile;
@@ -555,8 +551,9 @@ bool Image::SaveTGA(const char* filename)
 	tga.yOrigin = 0;
 
 	SwapBlueAndRed();
-	fwrite(&tga, sizeof(tgaheader_t), 1, pFile);
-	fwrite(m_pData, sizeof(GLubyte), m_imageSize, pFile);
+	fwrite(&tga, sizeof(tgaheader_t), 1);
+	fwrite(m_pData, sizeof(GLubyte), m_imageSize);
 	if (pFile) fclose(pFile);
 	return true;
 }
+*/

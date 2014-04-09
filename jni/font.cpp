@@ -74,7 +74,7 @@ GLvoid Font::CreateASCIIFont()
 	}
 
 	assert(vidx == total);
-	m_Texture.SetImageFile("/sdcard/dflora/font.bmp");
+	m_Texture.SetImageFile("font.bmp");
 	m_Texture.LoadTexture();
 }
 

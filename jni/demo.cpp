@@ -5,17 +5,17 @@ This source file is part of Dflora (Dancing Flora) OpenGL|ES 1.1 version
 Copyright (c) 2004-2005 Changzhi Li < richardzlee@163.com >
 
 This program is free software; you can redistribute it and/or modify it under
-the terms of the GNU Lesser General Public License as published by the Free 
-Software Foundation; either version 2 of the License, or (at your option) any 
+the terms of the GNU Lesser General Public License as published by the Free
+Software Foundation; either version 2 of the License, or (at your option) any
 later version.
 
 This program is distributed in the hope that it will be useful, but WITHOUT
 ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
-FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more 
+FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
 details.
 
-You should have received a copy of the GNU Lesser General Public License along 
-with this program; if not, write to the Free Software Foundation, Inc., 59 
+You should have received a copy of the GNU Lesser General Public License along
+with this program; if not, write to the Free Software Foundation, Inc., 59
 Temple Place - Suite 330, Boston, MA 02111-1307, USA, or go to
 http://www.gnu.org/copyleft/lesser.txt.
 -----------------------------------------------------------------------------
@@ -73,7 +73,7 @@ bool Demo::Create()
 
 	m_pButterflyGroup = new ButterflyGroup;
 	m_pButterflyGroup->Create(8);
-	m_pButterflyGroup->Initial();	
+	m_pButterflyGroup->Initial();
 
 	Real lightPosition0[4]   = {FTOR(0), FTOR(-20), FTOR(80), FTOR(1)};
 	Real diffuseProperties0[4]  = {FTOR(0.7), FTOR(0.7), FTOR(0.7), FTOR(1)};
@@ -105,15 +105,15 @@ bool Demo::Create()
 	m_pFlower4 = new Flower;
 
 #ifdef FIXED_REAL
-	if(!m_pFlower1->Load("/sdcard/dflora/model.q16"))	return FALSE;
-	if(!m_pFlower2->Load("/sdcard/dflora/model.q16"))	return FALSE;
-	if(!m_pFlower3->Load("/sdcard/dflora/model.q16"))	return FALSE;
-	if(!m_pFlower4->Load("/sdcard/dflora/model.q16"))	return FALSE;
+	if(!m_pFlower1->Load("model.q16"))	return FALSE;
+	if(!m_pFlower2->Load("model.q16"))	return FALSE;
+	if(!m_pFlower3->Load("model.q16"))	return FALSE;
+	if(!m_pFlower4->Load("model.q16"))	return FALSE;
 #else	// FLOAT_REAL
-	if(!m_pFlower1->Load("/sdcard/dflora/model.flt"))	return FALSE;
-	if(!m_pFlower2->Load("/sdcard/dflora/model.flt"))	return FALSE;
-	if(!m_pFlower3->Load("/sdcard/dflora/model.flt"))	return FALSE;
-	if(!m_pFlower4->Load("/sdcard/dflora/model.flt"))	return FALSE;
+	if(!m_pFlower1->Load("model.flt"))	return FALSE;
+	if(!m_pFlower2->Load("model.flt"))	return FALSE;
+	if(!m_pFlower3->Load("model.flt"))	return FALSE;
+	if(!m_pFlower4->Load("model.flt"))	return FALSE;
 #endif
 	m_pFlower1->StartGrowth();
 	m_pFlower2->StartGrowth();
@@ -122,16 +122,16 @@ bool Demo::Create()
 
 	m_pScript = new Script;
 #ifdef FIXED_REAL
-	if(!m_pScript->Load("/sdcard/dflora/littleswan.sqt"))	return FALSE;
+	if(!m_pScript->Load("littleswan.sqt"))	return FALSE;
 #else	// FLOAT_REAL
-	if(!m_pScript->Load("/sdcard/dflora/littleswan.sft"))	return FALSE;
+	if(!m_pScript->Load("littleswan.sft"))  return FALSE;
 #endif
 
 	g_Timer.Start();
 	m_AnimateTime = TimeValue(0);
 
 	SetupSchedule();
-	PlayMusic("/sdcard/dflora/bamboo1.wav");
+	PlayMusic("bamboo.mp3");
 
 	return TRUE;
 }
@@ -139,6 +139,9 @@ bool Demo::Create()
 void Demo::Destroy()
 {
 	m_pScript->Destory();
+
+	//stop music
+	StopMusic();
 }
 
 void Demo::Tick(TimeValue dt)
@@ -155,17 +158,17 @@ void Demo::Tick(TimeValue dt)
 	{
 		StopMusic();
 		m_bPlayMusic1 = true;
-		PlayMusic("/sdcard/dflora/bamboo.wav");
+		PlayMusic("bamboo.mp3");
 	}
 
 	if(m_itvPlayMusic2.Contain(m_AnimateTime) && !m_bPlayMusic2)
 	{
 		StopMusic();
 		m_bPlayMusic2 = true;
-		PlayMusic("/sdcard/dflora/littleswan.wav");
+		PlayMusic("littleswan.mp3");
 	}
 	m_AnimateTime += dt;
-	
+
 	if(m_AnimateTime > TimeValue(163500))
 	{
 		StopMusic();
@@ -175,7 +178,7 @@ void Demo::Tick(TimeValue dt)
 
 void Demo::Render()
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	m_Camera.SetPerspective();
 
 	RenderSky(m_AnimateTime);
@@ -183,7 +186,7 @@ void Demo::Render()
 	RenderButterflyGroup(m_AnimateTime);
 	RenderFlowers(m_AnimateTime);
 	RenderCamera(m_AnimateTime);
-	RenderText(m_AnimateTime);	
+	RenderText(m_AnimateTime);
 }
 
 void Demo::SetupSchedule()
@@ -195,12 +198,12 @@ void Demo::SetupSchedule()
 	end += itv;
 	m_itvCameraFadeIn.Set(start, end);
 	m_itvTitleFontRender.Set(start, end);
-	
+
 	itv = TimeValue(10*1000);
 	start = end; end += itv;
 	m_itvLensFlareRender.Set(start, start+TimeValue(6200));
 	m_itvCameraAnimation1.Set(TimeValue(100), end);
-	
+
 	start = end;
 	itv = TimeValue(10*1000);
 	end = TimeValue(62*1000);
@@ -228,7 +231,7 @@ void Demo::SetupSchedule()
 	m_itvCameraAnimation2.Set(start, end);
 	m_itvButterflyGroupAnimation.Set(TimeValue(0), end);
 	m_itvPlayMusic2.Set(start, start+TimeValue(1000));
-	
+
 	// rendering interval
 	m_itvFlowersRender.Set(TimeValue(0), end);
 	start = end-TimeValue(3000);
@@ -402,10 +405,10 @@ void Demo::RenderCamera(TimeValue t)
 			ITOR(m_itvCameraFadeIn.Duration()));
 		m_Camera.Fade(R_ONE-alpha);
 	}
-	
+
 	if(m_itvCameraFadeOut.Contain(t))
 	{
-		Real alpha = Quotient(ITOR(t-m_itvCameraFadeOut.Start()), 
+		Real alpha = Quotient(ITOR(t-m_itvCameraFadeOut.Start()),
 			ITOR(m_itvCameraFadeOut.Duration()));
 		m_Camera.Fade(alpha);
 	}
@@ -416,10 +419,10 @@ void Demo::RenderCamera(TimeValue t)
 			ITOR(m_itvCameraFadeInMid.Duration()));
 		m_Camera.Fade(R_ONE-alpha);
 	}
-	
+
 	if(m_itvCameraFadeOutMid.Contain(t))
 	{
-		Real alpha = Quotient(ITOR(t-m_itvCameraFadeOutMid.Start()), 
+		Real alpha = Quotient(ITOR(t-m_itvCameraFadeOutMid.Start()),
 			ITOR(m_itvCameraFadeOutMid.Duration()));
 		m_Camera.Fade(alpha);
 	}
@@ -440,7 +443,7 @@ void Demo::RenderText(TimeValue t)
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
-		glColor4r(FTOR(1.0), FTOR(0), FTOR(0), FTOR(0.8));	
+		glColor4r(FTOR(1.0), FTOR(0), FTOR(0), FTOR(0.8));
 		g_Font.Draw2DStringLine(FTOR(40), FTOR(180), FTOR(3.0), FTOR(3.0), "Dancing", true);
 		g_Font.Draw2DStringLine(FTOR(100), FTOR(140), FTOR(3.0), FTOR(3.0), "Flora", true);
 		glDisable(GL_BLEND);
